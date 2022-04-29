@@ -6,6 +6,11 @@ document.addEventListener("DOMContentLoaded", function() {
         $hours_wrapper = document.getElementById('hours-wrapper'),
         $task_container = document.getElementById('tasks-container');
 
+    /* Add dragndrop */
+    new Sortable($task_container, {
+        animation: 150,
+    });
+
     /* Add a task */
     function add_task() {
         var $li = document.createElement('li');
@@ -35,9 +40,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     /* Generate Export & Preview*/
-    $task_container.addEventListener('change', function(e){
+    $task_container.addEventListener('change', function(e) {
         regenerate_export();
-        if(e.target.getAttribute('name') == 'duration'){
+        if (e.target.getAttribute('name') == 'duration') {
             e.target.closest('[data-item="task-item"]').setAttribute('data-duration', e.target.value)
         }
     });
