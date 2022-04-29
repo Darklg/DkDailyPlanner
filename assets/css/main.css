@@ -14,6 +14,11 @@
     line-height: 1.5;
 }
 
+hr {
+    margin: 2em 0;
+    border: 1px solid #EEE;
+}
+
 h1,
 h2,
 h3,
@@ -23,12 +28,36 @@ h5 {
     margin-bottom: 0.5em;
 }
 
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.8em;
+}
+
+select {
+    height: 1.5em;
+    background-color: transparent;
+}
+
+.button-wrapper {
+    margin: 1em 0;
+    padding-left: 4em;
+}
+
 button {
     padding: 0 1em;
+    text-align: center;
+    background-color: #EEE;
+    transition: background-color 0.3s ease;
     cursor: pointer;
 }
 
-input,
+button:hover {
+    background-color: #CCC;
+}
+
 textarea {
     width: 100%;
     padding: 0.5em;
@@ -62,50 +91,83 @@ body {
   Elements
 ---------------------------------------------------------- */
 
+/* Wrapper
+-------------------------- */
+
+.task-container__wrapper {
+    z-index: 1;
+    position: relative;
+    margin: 1em 0;
+    padding-left: 4em;
+    overflow: hidden;
+}
+
+/* List
+-------------------------- */
+
+.tasks-container {
+    z-index: 1;
+    position: relative;
+}
+
 /* Item
 -------------------------- */
 
 li[data-item="task-item"] {
     z-index: 1;
     position: relative;
-    margin: 5px 0;
-    padding: 0 50px 0 80px;
-    border: 1px solid #F0F0F0;
-    border-width: 5px 0;
-    background: #F0F0F0;
-}
-
-li[data-item="task-item"] select {
-    z-index: 1;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 70px;
-    background-color: inherit;
-    transform: translateY(-50%);
-}
-
-li[data-item="task-item"] [data-action="remove-task"] {
-    z-index: 1;
-    position: absolute;
-    top: 50%;
-    right: 0;
-    width: 50px;
-    transform: translateY(-50%);
-}
-
-/* ----------------------------------------------------------
-  Preview area
----------------------------------------------------------- */
-
-[data-item="preview-area"] {
-    z-index: 1;
-    position: relative;
-    padding-left: 4em;
+    height: 3em;
     overflow: hidden;
 }
 
-[data-item="preview-area"] .hours-wrapper {
+li[data-item="task-item"][data-duration="30"] {
+    height: 6em;
+}
+
+li[data-item="task-item"][data-duration="45"] {
+    height: 9em;
+}
+
+.task-item__inner {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: 1px;
+    padding: 0.1em 9em 0.1em 0.1em;
+    border-radius: 0.5em;
+    overflow: hidden;
+    background: #F0F0F0;
+}
+
+.task-item__inner [name="task_content"] {
+    width: 100%;
+    padding: 0.5em;
+    background: transparent;
+}
+
+.task-item__inner [data-action="remove-task"] {
+    z-index: 1;
+    position: absolute;
+    top: 0.5em;
+    right: 0.5em;
+    width: 3em;
+}
+
+.task-item__inner [name="duration"] {
+    z-index: 1;
+    position: absolute;
+    top: 0.5em;
+    right: 3.5em;
+    width: 4.5em;
+}
+
+/* Hours
+-------------------------- */
+
+.task-container__wrapper .hours-wrapper {
     z-index: 1;
     position: absolute;
     top: 0;
@@ -113,7 +175,7 @@ li[data-item="task-item"] [data-action="remove-task"] {
     width: 4em;
 }
 
-[data-item="preview-area"] .hour {
+.task-container__wrapper .hour {
     z-index: 1;
     position: absolute;
     top: 0;
@@ -121,27 +183,33 @@ li[data-item="task-item"] [data-action="remove-task"] {
     width: 100%;
 }
 
-[data-item="preview-area"] .hour-item {
-    padding: 0 0.5em;
-    border-top: 1px solid #ccc;
-    height: 12em;
-}
-
-[data-item="preview-area"] .timeblock {
+.task-container__wrapper .hour-item {
     z-index: 1;
     position: relative;
+    height: 12em;
+    padding: 0 0.5em;
+    border-top: 1px solid #DDD;
 }
 
-[data-item="preview-area"] .timeblock-task {
+.task-container__wrapper .hour-item:before {
+    content: '';
     z-index: 1;
     position: absolute;
-    top: 0;
+    top: 50%;
     right: 0;
-    bottom: 0;
-    left: 0;
-    margin: 0.1em;
-    padding: 0.1em 0.5em;
-    border-radius: 0.5em;
-    font-size: 0.8em;
-    background-color: #F0F0F0;
+    width: 2em;
+    height: 1px;
+    background-color: #DDD;
+}
+
+.task-container__wrapper .hour-item:after {
+    content: '';
+    z-index: 1;
+    position: absolute;
+    top: 25%;
+    right: 0;
+    width: 1.5em;
+    height: 50%;
+    border: 1px solid #DDD;
+    border-width: 1px 0;
 }

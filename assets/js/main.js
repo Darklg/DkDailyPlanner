@@ -3,8 +3,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var task_tpl = document.getElementById('task-template').innerHTML,
         $export = document.querySelector('[data-item="export-area"]'),
-        $preview = document.querySelector('[data-item="preview-area"]'),
-        $task_container = document.getElementById('task-container');
+        $hours_wrapper = document.getElementById('hours-wrapper'),
+        $task_container = document.getElementById('tasks-container');
 
     /* Add a task */
     function add_task() {
@@ -26,25 +26,30 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         e.preventDefault();
-        var $li = e.target.closest('[data-item="task-item"]');
-        delete_task($li)
+        delete_task(e.target.closest('[data-item="task-item"]'))
     });
 
     function delete_task($obj) {
         $obj.parentNode.removeChild($obj);
-        generate_export_preview();
+        regenerate_export();
     }
 
     /* Generate Export & Preview*/
-    $task_container.addEventListener('change', generate_export_preview);
+    $task_container.addEventListener('change', function(e){
+        regenerate_export();
+        if(e.target.getAttribute('name') == 'duration'){
+            e.target.closest('[data-item="task-item"]').setAttribute('data-duration', e.target.value)
+        }
+    });
     $task_container.addEventListener('keyup', function(e) {
-        generate_export_preview();
-        if (event.key === "Enter") {
+        regenerate_export();
+        if (e.key === "Enter") {
             add_task();
         }
     });
+    regenerate_export();
 
-    function generate_export_preview() {
+    function regenerate_export() {
 
         var _startHour = 9;
 
@@ -69,11 +74,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
-            /* Add to preview */
-            _preview_content += '<div class="timeblock" style="height:' + duration / 5 + 'em;"><div class="timeblock-task">' + task + '</div></div>'
-
             /* Add to export */
-            _export_content += 'today ' + startTime.getHours() + ':' + startTime.getMinutes();
+            _export_content += startTime.toISOString().slice(0, 10) + ' ' + startTime.getHours() + ':' + startTime.getMinutes();
             _export_content += ' ' + task;
             _export_content += ' [' + duration + 'm]' + "\n";
 
@@ -86,8 +88,8 @@ document.addEventListener("DOMContentLoaded", function() {
             _hours_content += '<div class="hour-item">' + i + ':00</div>';
         }
 
+        $hours_wrapper.innerHTML = _hours_content.trim();
         $export.innerHTML = _export_content.trim();
         $export.style.height = ($export.scrollHeight + 5) + "px";
-        $preview.innerHTML = '<div class="hours-wrapper">' + _hours_content + '</div><div class="timeblocks-wrapper">' + _preview_content + '</div>';
     }
 });
