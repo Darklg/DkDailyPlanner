@@ -1,3 +1,7 @@
+/**
+ * DK Daily Planner v 0.4.1
+ */
+
 document.addEventListener("DOMContentLoaded", function() {
     'use strict';
 
@@ -63,10 +67,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (localStorage.getItem('dkdailyplanner_settings')) {
         var _settings = JSON.parse(localStorage.getItem('dkdailyplanner_settings'));
-        $start_hour.value = _settings.startHour;
-        $start_hour.dispatchEvent(new Event('change'))
-        $start_minutes.value = _settings.startMinutes;
-        $start_minutes.dispatchEvent(new Event('change'))
+        if (_settings.startHour) {
+            $start_hour.value = _settings.startHour;
+            $start_hour.dispatchEvent(new Event('change'))
+        }
+        if (_settings.startMinutes) {
+            $start_minutes.value = _settings.startMinutes;
+            $start_minutes.dispatchEvent(new Event('change'))
+        }
     }
 
     /* ----------------------------------------------------------
