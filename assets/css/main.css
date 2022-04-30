@@ -113,22 +113,30 @@ body {
 /* Item
 -------------------------- */
 
-li[data-item="task-item"] {
+li[data-item*="task-item"] {
     z-index: 1;
     position: relative;
     height: 3em;
     overflow: hidden;
 }
 
-li[data-item="task-item"].sortable-ghost {
+li[data-item*="task-item"].sortable-ghost {
     opacity: 0.50;
 }
 
-li[data-item="task-item"][data-duration="30"] {
+li[data-item*="task-item"][data-duration="0"] {
+    display: none;
+}
+
+li[data-item*="task-item"][data-duration="15"] {
+    height: 3em;
+}
+
+li[data-item*="task-item"][data-duration="30"] {
     height: 6em;
 }
 
-li[data-item="task-item"][data-duration="45"] {
+li[data-item*="task-item"][data-duration="45"] {
     height: 9em;
 }
 

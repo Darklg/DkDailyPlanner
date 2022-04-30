@@ -4,19 +4,34 @@ document.addEventListener("DOMContentLoaded", function() {
     var task_tpl = document.getElementById('task-template').innerHTML,
         $export = document.querySelector('[data-item="export-area"]'),
         $hours_wrapper = document.getElementById('hours-wrapper'),
+        $start_hour = document.getElementById('select-starthour'),
+        $start_minutes = document.getElementById('select-startminutes'),
+        $item_startofday = document.getElementById('item-startofday'),
         $task_container = document.getElementById('tasks-container');
 
     /* Add dragndrop */
     new Sortable($task_container, {
+        filter: '[data-disabled="1"]',
+        onMove: function(e) {
+            return e.related.getAttribute('data-disabled') != 1;
+        },
         animation: 150,
     });
 
-    /* Add a task */
-    function add_task() {
+    /* ----------------------------------------------------------
+      Add a task
+    ---------------------------------------------------------- */
+
+    function add_task($elFrom) {
         var $li = document.createElement('li');
         $li.innerHTML = task_tpl;
         $li.setAttribute('data-item', 'task-item');
-        $task_container.appendChild($li);
+        if ($elFrom) {
+            $elFrom.insertAdjacentElement('afterend', $li);
+        }
+        else {
+            $task_container.appendChild($li);
+        }
         $li.querySelector('input[name="task_content"]').focus();
     }
     document.getElementById('add-task').addEventListener('click', function(e) {
@@ -25,7 +40,10 @@ document.addEventListener("DOMContentLoaded", function() {
     }, 1);
     add_task();
 
-    /* Delete a task */
+    /* ----------------------------------------------------------
+      Delete a task
+    ---------------------------------------------------------- */
+
     $task_container.addEventListener('click', function(e) {
         if (e.target.getAttribute('data-action') != 'remove-task' && e.target.parentNode.getAttribute('data-action') != 'remove-task') {
             return;
@@ -39,7 +57,32 @@ document.addEventListener("DOMContentLoaded", function() {
         regenerate_export();
     }
 
-    /* Generate Export & Preview*/
+    /* ----------------------------------------------------------
+      Load settings
+    ---------------------------------------------------------- */
+
+    if (localStorage.getItem('dkdailyplanner_settings')) {
+        var _settings = JSON.parse(localStorage.getItem('dkdailyplanner_settings'));
+        $start_hour.value = _settings.startHour;
+        $start_hour.dispatchEvent(new Event('change'))
+        $start_minutes.value = _settings.startMinutes;
+        $start_minutes.dispatchEvent(new Event('change'))
+    }
+
+    /* ----------------------------------------------------------
+      Handle start of day
+    ---------------------------------------------------------- */
+
+    /* Hour */
+    $start_hour.addEventListener('change', regenerate_export, 1);
+
+    /* Minutes */
+    $start_minutes.addEventListener('change', regenerate_export, 1);
+
+    /* ----------------------------------------------------------
+      Generate Export & Preview
+    ---------------------------------------------------------- */
+
     $task_container.addEventListener('change', function(e) {
         regenerate_export();
         if (e.target.getAttribute('name') == 'duration') {
@@ -49,20 +92,28 @@ document.addEventListener("DOMContentLoaded", function() {
     $task_container.addEventListener('keyup', function(e) {
         regenerate_export();
         if (e.key === "Enter") {
-            add_task();
+            add_task(e.target.closest('[data-item="task-item"]'));
         }
     });
     regenerate_export();
 
     function regenerate_export() {
 
-        var _startHour = 9;
+        var _startHour = parseInt($start_hour.value);
+        var _startMinutes = parseInt($start_minutes.value);
+
+        localStorage.setItem('dkdailyplanner_settings', JSON.stringify({
+            startHour: _startHour,
+            startMinutes: _startMinutes,
+        }));
 
         /* Build start date */
         var startTime = new Date();
         startTime.setHours(_startHour);
-        startTime.setMinutes(0);
+        startTime.setMinutes(_startMinutes);
         startTime.setSeconds(0);
+
+        $item_startofday.setAttribute('data-duration', _startMinutes);
 
         /* Return values */
         var _export_content = '',
