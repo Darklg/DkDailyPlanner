@@ -1,5 +1,5 @@
 /**
- * DK Daily Planner v 0.4.1
+ * DK Daily Planner v 0.4.2
  */
 
 document.addEventListener("DOMContentLoaded", function() {

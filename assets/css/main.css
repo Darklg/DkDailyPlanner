@@ -140,6 +140,10 @@ li[data-item*="task-item"][data-duration="45"] {
     height: 9em;
 }
 
+li[data-item*="task-item"][data-duration="60"] {
+    height: 12em;
+}
+
 .task-item__inner {
     z-index: 1;
     position: absolute;
