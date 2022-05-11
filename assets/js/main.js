@@ -1,5 +1,5 @@
 /**
- * DK Daily Planner v 0.4.2
+ * DK Daily Planner v 0.5.0
  */
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function() {
       Add a task
     ---------------------------------------------------------- */
 
-    function add_task($elFrom) {
+    function add_task($elFrom, _initialValues) {
         var $li = document.createElement('li');
         $li.innerHTML = task_tpl;
         $li.setAttribute('data-item', 'task-item');
@@ -36,13 +36,86 @@ document.addEventListener("DOMContentLoaded", function() {
         else {
             $task_container.appendChild($li);
         }
-        $li.querySelector('input[name="task_content"]').focus();
+
+        /* Load initial values */
+        var $task = $li.querySelector('input[name="task_content"]'),
+            $duration = $li.querySelector('select[name="duration"]');
+        if (_initialValues && _initialValues.task) {
+            $task.value = _initialValues.task;
+        }
+        if (_initialValues && _initialValues.duration) {
+            $duration.querySelector('option[value="' + _initialValues.duration + '"]').setAttribute('selected', 'selected');
+            $duration.dispatchEvent(new Event('change'));
+            update_select_duration($duration);
+        }
+
+
+
+        /* Focus on input */
+        $task.focus();
     }
+
+    /* Initial tasks
+    -------------------------- */
+
+    (function() {
+        var _tasks = JSON.parse(localStorage.getItem('dkdailyplanner_tasks'));
+        if (_tasks && _tasks.length) {
+            for (var i = 0, len = _tasks.length; i < len; i++) {
+                add_task(false, _tasks[i]);
+            }
+            regenerate_export();
+        }
+        else {
+            add_task();
+            regenerate_export();
+        }
+    }());
+
+    /* Add task
+    -------------------------- */
+
     document.getElementById('add-task').addEventListener('click', function(e) {
         e.preventDefault();
         add_task();
+        regenerate_export();
     }, 1);
-    add_task();
+
+    /* Select update
+    -------------------------- */
+
+    function update_select_duration($sel) {
+        $sel.closest('[data-item="task-item"]').setAttribute('data-duration', $sel.value);
+    }
+
+    /* Handle paste
+    -------------------------- */
+
+    $task_container.addEventListener('paste', function(e) {
+        if(e.target.getAttribute('name') != 'task_content'){
+            return;
+        }
+        e.preventDefault();
+
+        /* Get clean pasted data and split it */
+        var val = (e.clipboardData || window.clipboardData).getData('text');;
+        val = val.trim().split("\n").map(function(item) {
+            return item.trim();
+        });
+        if (val[0]) {
+            e.target.value = val[0];
+        }
+
+        /* Insert each line as a new task */
+        for (var i = 1, len = val.length; i < len; i++) {
+            if (!val[i]) {
+                continue;
+            }
+            add_task(false, {
+                task: val[i]
+            });
+        }
+    });
 
     /* ----------------------------------------------------------
       Delete a task
@@ -91,10 +164,10 @@ document.addEventListener("DOMContentLoaded", function() {
       Generate Export & Preview
     ---------------------------------------------------------- */
 
-    $task_container.addEventListener('change', function(e) {
+    document.addEventListener('change', function(e) {
         regenerate_export();
         if (e.target.getAttribute('name') == 'duration') {
-            e.target.closest('[data-item="task-item"]').setAttribute('data-duration', e.target.value)
+            update_select_duration(e.target);
         }
     });
     $task_container.addEventListener('keyup', function(e) {
@@ -126,7 +199,8 @@ document.addEventListener("DOMContentLoaded", function() {
         /* Return values */
         var _export_content = '',
             _hours_content = '',
-            _preview_content = '';
+            _preview_content = '',
+            _tasks = [];
 
         /* Parse tasks */
         $task_container.querySelectorAll('[data-item="task-item"]').forEach(function(li) {
@@ -145,7 +219,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
             /* Increment time */
             startTime.setTime(startTime.getTime() + (duration * 60 * 1000));
+
+            _tasks.push({
+                task: task,
+                duration: duration
+            })
         });
+
+        localStorage.setItem('dkdailyplanner_tasks', JSON.stringify(_tasks));
 
         /* Build hours wrapper */
         for (var i = _startHour, len = startTime.getHours(); i <= len; i++) {
@@ -153,7 +234,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         $hours_wrapper.innerHTML = _hours_content.trim();
-        $export.innerHTML = _export_content.trim();
+        $export.value = _export_content.trim();
         $export.style.height = ($export.scrollHeight + 5) + "px";
     }
 });
