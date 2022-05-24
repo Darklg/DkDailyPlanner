@@ -1,5 +1,5 @@
 /**
- * DK Daily Planner v 0.5.0
+ * DK Daily Planner v 0.6.0
  */
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -21,6 +21,35 @@ document.addEventListener("DOMContentLoaded", function() {
         },
         animation: 150,
     });
+
+    /* ----------------------------------------------------------
+      Set values
+    ---------------------------------------------------------- */
+
+    /* Build hours */
+    for (var i = 0; i <= 23; i++) {
+        var option = document.createElement("option");
+        if (i == 9) {
+            option.selected = true;
+        }
+        option.value = i;
+        option.text = i;
+        $start_hour.appendChild(option);
+    }
+
+    /* ----------------------------------------------------------
+      Load settings
+    ---------------------------------------------------------- */
+
+    if (localStorage.getItem('dkdailyplanner_settings')) {
+        var _settings = JSON.parse(localStorage.getItem('dkdailyplanner_settings'));
+        if (_settings.startHour) {
+            $start_hour.value = _settings.startHour;
+        }
+        if (_settings.startMinutes) {
+            $start_minutes.value = _settings.startMinutes;
+        }
+    }
 
     /* ----------------------------------------------------------
       Add a task
@@ -48,8 +77,6 @@ document.addEventListener("DOMContentLoaded", function() {
             $duration.dispatchEvent(new Event('change'));
             update_select_duration($duration);
         }
-
-
 
         /* Focus on input */
         $task.focus();
@@ -92,13 +119,13 @@ document.addEventListener("DOMContentLoaded", function() {
     -------------------------- */
 
     $task_container.addEventListener('paste', function(e) {
-        if(e.target.getAttribute('name') != 'task_content'){
+        if (e.target.getAttribute('name') != 'task_content') {
             return;
         }
         e.preventDefault();
 
         /* Get clean pasted data and split it */
-        var val = (e.clipboardData || window.clipboardData).getData('text');;
+        var val = (e.clipboardData || window.clipboardData).getData('text');
         val = val.trim().split("\n").map(function(item) {
             return item.trim();
         });
@@ -126,28 +153,12 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         e.preventDefault();
-        delete_task(e.target.closest('[data-item="task-item"]'))
+        delete_task(e.target.closest('[data-item="task-item"]'));
     });
 
     function delete_task($obj) {
         $obj.parentNode.removeChild($obj);
         regenerate_export();
-    }
-
-    /* ----------------------------------------------------------
-      Load settings
-    ---------------------------------------------------------- */
-
-    if (localStorage.getItem('dkdailyplanner_settings')) {
-        var _settings = JSON.parse(localStorage.getItem('dkdailyplanner_settings'));
-        if (_settings.startHour) {
-            $start_hour.value = _settings.startHour;
-            $start_hour.dispatchEvent(new Event('change'))
-        }
-        if (_settings.startMinutes) {
-            $start_minutes.value = _settings.startMinutes;
-            $start_minutes.dispatchEvent(new Event('change'))
-        }
     }
 
     /* ----------------------------------------------------------
@@ -189,17 +200,26 @@ document.addEventListener("DOMContentLoaded", function() {
         }));
 
         /* Build start date */
-        var startTime = new Date();
+        var startTime = new Date(),
+            initialTime = new Date(),
+            currentTime = new Date();
         startTime.setHours(_startHour);
         startTime.setMinutes(_startMinutes);
         startTime.setSeconds(0);
 
+        /* Start tomorrow if too late */
+        if (startTime.getTime() < currentTime.getTime()) {
+            startTime.setTime(startTime.getTime() + (86400 * 1000));
+        }
+
+        initialTime.setTime(startTime.getTime());
+
+        /* Set delta at start of day */
         $item_startofday.setAttribute('data-duration', _startMinutes);
 
         /* Return values */
         var _export_content = '',
             _hours_content = '',
-            _preview_content = '',
             _tasks = [];
 
         /* Parse tasks */
@@ -207,30 +227,30 @@ document.addEventListener("DOMContentLoaded", function() {
             var duration = parseInt(li.querySelector('[name="duration"]').value),
                 task = li.querySelector('[name="task_content"]').value;
 
-            /* Ignore empty task */
-            if (!task) {
-                return;
-            }
+            /* Only empty task */
+            if (task) {
+                /* Add to export */
+                _export_content += startTime.toISOString().slice(0, 10) + ' ' + startTime.getHours() + ':' + String(startTime.getMinutes()).padStart(2, "0");
+                _export_content += ' ' + task;
+                _export_content += ' [' + duration + 'm]' + "\n";
 
-            /* Add to export */
-            _export_content += startTime.toISOString().slice(0, 10) + ' ' + startTime.getHours() + ':' + startTime.getMinutes();
-            _export_content += ' ' + task;
-            _export_content += ' [' + duration + 'm]' + "\n";
+                _tasks.push({
+                    task: task,
+                    duration: duration
+                });
+            }
 
             /* Increment time */
             startTime.setTime(startTime.getTime() + (duration * 60 * 1000));
 
-            _tasks.push({
-                task: task,
-                duration: duration
-            })
         });
 
         localStorage.setItem('dkdailyplanner_tasks', JSON.stringify(_tasks));
 
         /* Build hours wrapper */
-        for (var i = _startHour, len = startTime.getHours(); i <= len; i++) {
-            _hours_content += '<div class="hour-item">' + i + ':00</div>';
+        while (initialTime.getTime() < startTime.getTime()) {
+            _hours_content += '<div class="hour-item">' + initialTime.getHours() + ':00</div>';
+            initialTime.setTime(initialTime.getTime() + (3600 * 1000));
         }
 
         $hours_wrapper.innerHTML = _hours_content.trim();
