@@ -1,5 +1,5 @@
 /**
- * DK Daily Planner v 0.6.0
+ * DK Daily Planner v 0.6.1
  */
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -231,8 +231,9 @@ document.addEventListener("DOMContentLoaded", function() {
             if (task) {
                 /* Add to export */
                 _export_content += startTime.toISOString().slice(0, 10) + ' ' + startTime.getHours() + ':' + String(startTime.getMinutes()).padStart(2, "0");
+                _export_content += ' pendant ' + duration + 'm';
                 _export_content += ' ' + task;
-                _export_content += ' [' + duration + 'm]' + "\n";
+                _export_content +=  "\n";
 
                 _tasks.push({
                     task: task,
