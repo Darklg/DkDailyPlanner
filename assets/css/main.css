@@ -128,6 +128,14 @@ li[data-item*="task-item"][data-duration="0"] {
     display: none;
 }
 
+li[data-item*="task-item"][data-duration="5"] {
+    height: 1em;
+}
+
+li[data-item*="task-item"][data-duration="10"] {
+    height: 2em;
+}
+
 li[data-item*="task-item"][data-duration="15"] {
     height: 3em;
 }
@@ -157,6 +165,10 @@ li[data-item*="task-item"][data-duration="60"] {
     overflow: hidden;
     background: #F0F0F0;
     cursor: move;
+}
+
+[data-item="task-item"][data-type="break"] .task-item__inner {
+    background: #F9F9F9;
 }
 
 .task-item__inner:after,
@@ -191,6 +203,7 @@ li[data-item*="task-item"][data-duration="60"] {
     top: 0.5em;
     right: 0.5em;
     width: 3em;
+    background: transparent;
 }
 
 .task-item__inner [name="duration"] {

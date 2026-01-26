@@ -1,5 +1,5 @@
 /**
- * DK Daily Planner v 0.6.1
+ * DK Daily Planner v 0.7.0
  */
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -69,6 +69,8 @@ document.addEventListener("DOMContentLoaded", function() {
         /* Load initial values */
         var $task = $li.querySelector('input[name="task_content"]'),
             $duration = $li.querySelector('select[name="duration"]');
+
+        update_task_type($task);
         if (_initialValues && _initialValues.task) {
             $task.value = _initialValues.task;
         }
@@ -115,6 +117,22 @@ document.addEventListener("DOMContentLoaded", function() {
         $sel.closest('[data-item="task-item"]').setAttribute('data-duration', $sel.value);
     }
 
+    /* Update type
+    -------------------------- */
+
+    function update_task_type($input) {
+        var val = $input.value.trim(),
+            $task = $input.closest('[data-item="task-item"]');
+        $task.setAttribute('data-type', 'task');
+        if (is_break_task(val)) {
+            $task.setAttribute('data-type', 'break');
+        }
+    }
+
+    function is_break_task(val) {
+        return val.trim().startsWith('#');
+    }
+
     /* Handle paste
     -------------------------- */
 
@@ -127,6 +145,9 @@ document.addEventListener("DOMContentLoaded", function() {
         /* Get clean pasted data and split it */
         var val = (e.clipboardData || window.clipboardData).getData('text');
         val = val.trim().split("\n").map(function(item) {
+            if (item.startsWith('- ')) {
+                item = item.slice(2);
+            }
             return item.trim();
         });
         if (val[0]) {
@@ -225,15 +246,22 @@ document.addEventListener("DOMContentLoaded", function() {
         /* Parse tasks */
         $task_container.querySelectorAll('[data-item="task-item"]').forEach(function(li) {
             var duration = parseInt(li.querySelector('[name="duration"]').value),
-                task = li.querySelector('[name="task_content"]').value;
+                $input = li.querySelector('[name="task_content"]'),
+                task = $input.value;
 
             /* Only empty task */
             if (task) {
-                /* Add to export */
-                _export_content += startTime.toISOString().slice(0, 10) + ' ' + startTime.getHours() + ':' + String(startTime.getMinutes()).padStart(2, "0");
-                _export_content += ' pendant ' + duration + 'm';
-                _export_content += ' ' + task;
-                _export_content +=  "\n";
+
+                update_task_type($input);
+
+                if (!is_break_task(task)) {
+
+                    /* Add to export */
+                    _export_content += startTime.toISOString().slice(0, 10) + ' ' + startTime.getHours() + ':' + String(startTime.getMinutes()).padStart(2, "0");
+                    _export_content += ' pendant ' + duration + 'm';
+                    _export_content += ' ' + task;
+                    _export_content +=  "\n";
+                }
 
                 _tasks.push({
                     task: task,
