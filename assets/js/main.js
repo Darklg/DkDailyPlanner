@@ -1,5 +1,5 @@
 /**
- * DK Daily Planner v 0.7.0
+ * DK Daily Planner v 0.8.0
  */
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -10,8 +10,11 @@ document.addEventListener("DOMContentLoaded", function() {
         $hours_wrapper = document.getElementById('hours-wrapper'),
         $start_hour = document.getElementById('select-starthour'),
         $start_minutes = document.getElementById('select-startminutes'),
+        $start_day = document.getElementById('select-startday'),
+        $select_now = document.getElementById('select-now'),
         $item_startofday = document.getElementById('item-startofday'),
-        $task_container = document.getElementById('tasks-container');
+        $task_container = document.getElementById('tasks-container'),
+        $reset_planner = document.getElementById('reset-planner');
 
     /* Add dragndrop */
     new Sortable($task_container, {
@@ -49,6 +52,9 @@ document.addEventListener("DOMContentLoaded", function() {
         if (_settings.startMinutes) {
             $start_minutes.value = _settings.startMinutes;
         }
+        if (_settings.startDay) {
+            $start_day.value = _settings.startDay;
+        }
     }
 
     /* ----------------------------------------------------------
@@ -61,8 +67,7 @@ document.addEventListener("DOMContentLoaded", function() {
         $li.setAttribute('data-item', 'task-item');
         if ($elFrom) {
             $elFrom.insertAdjacentElement('afterend', $li);
-        }
-        else {
+        } else {
             $task_container.appendChild($li);
         }
 
@@ -94,8 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 add_task(false, _tasks[i]);
             }
             regenerate_export();
-        }
-        else {
+        } else {
             add_task();
             regenerate_export();
         }
@@ -192,6 +196,35 @@ document.addEventListener("DOMContentLoaded", function() {
     /* Minutes */
     $start_minutes.addEventListener('change', regenerate_export, 1);
 
+    /* Day */
+    $start_day.addEventListener('change', regenerate_export, 1);
+
+    /* Now button */
+    $select_now.addEventListener('click', function(e) {
+        e.preventDefault();
+        var now = new Date();
+        var _day = 'today';
+        var _hours = now.getHours();
+        var _minutes = Math.round(now.getMinutes() / 15) * 15;
+        if (_minutes == 0) {
+            _minutes = '00';
+        }
+        if(_minutes == 60) {
+            _minutes = '00';
+            _hours += 1;
+            if(_hours == 24) {
+                _hours = 0;
+                _day = 'tomorrow';
+            }
+        }
+
+        $start_hour.value = _hours;
+        $start_minutes.value = _minutes;
+        $start_day.value = _day;
+        regenerate_export();
+
+    }, 1);
+
     /* ----------------------------------------------------------
       Generate Export & Preview
     ---------------------------------------------------------- */
@@ -214,10 +247,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
         var _startHour = parseInt($start_hour.value);
         var _startMinutes = parseInt($start_minutes.value);
+        var _startDay = $start_day.value;
 
         localStorage.setItem('dkdailyplanner_settings', JSON.stringify({
             startHour: _startHour,
             startMinutes: _startMinutes,
+            startDay: _startDay
         }));
 
         /* Build start date */
@@ -225,11 +260,11 @@ document.addEventListener("DOMContentLoaded", function() {
             initialTime = new Date(),
             currentTime = new Date();
         startTime.setHours(_startHour);
-        startTime.setMinutes(_startMinutes);
+        startTime.setMinutes(_startMinutes)
         startTime.setSeconds(0);
 
         /* Start tomorrow if too late */
-        if (startTime.getTime() < currentTime.getTime()) {
+        if (startTime.getTime() < currentTime.getTime() && _startDay == 'tomorrow') {
             startTime.setTime(startTime.getTime() + (86400 * 1000));
         }
 
@@ -260,7 +295,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     _export_content += startTime.toISOString().slice(0, 10) + ' ' + startTime.getHours() + ':' + String(startTime.getMinutes()).padStart(2, "0");
                     _export_content += ' pendant ' + duration + 'm';
                     _export_content += ' ' + task;
-                    _export_content +=  "\n";
+                    _export_content += "\n";
                 }
 
                 _tasks.push({
@@ -277,13 +312,29 @@ document.addEventListener("DOMContentLoaded", function() {
         localStorage.setItem('dkdailyplanner_tasks', JSON.stringify(_tasks));
 
         /* Build hours wrapper */
-        while (initialTime.getTime() < startTime.getTime()) {
-            _hours_content += '<div class="hour-item">' + initialTime.getHours() + ':00</div>';
+        _hours_content += '<div class="hour-item">' + initialTime.getHours() + ':00</div>';
+        while (initialTime.getHours() <= startTime.getHours()) {
             initialTime.setTime(initialTime.getTime() + (3600 * 1000));
+            _hours_content += '<div class="hour-item">' + initialTime.getHours() + ':00</div>';
         }
+
 
         $hours_wrapper.innerHTML = _hours_content.trim();
         $export.value = _export_content.trim();
         $export.style.height = ($export.scrollHeight + 5) + "px";
     }
+
+    /* ----------------------------------------------------------
+      Reset planner
+    ---------------------------------------------------------- */
+
+    $reset_planner.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (!confirm('Are you sure you want to reset the planner? This will delete all your tasks and settings.')) {
+            return;
+        }
+        localStorage.removeItem('dkdailyplanner_tasks');
+        localStorage.removeItem('dkdailyplanner_settings');
+        location.reload();
+    });
 });

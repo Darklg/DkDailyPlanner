@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <title>Daily Planner</title>
 <meta name="viewport" content="width=device-width" />
-<link rel="stylesheet" type="text/css" href="assets/css/main.css?v=0.7.0" />
-<script src="assets/js/main.js?v=0.7.0"></script>
+<link rel="stylesheet" type="text/css" href="assets/css/main.css?v=0.8.0" />
+<script src="assets/js/main.js?v=0.8.0"></script>
 <script src="assets/js/sortable.min.js?v=1.14.0"></script>
 </head>
 <body>
@@ -22,6 +22,11 @@
         <option value="30">30</option>
         <option value="45">45</option>
     </select>
+    <select id="select-startday" name="day">
+        <option value="today">Today</option>
+        <option value="tomorrow">Tomorrow</option>
+    </select>
+    <button id="select-now" type="button">Now</button>
 </div>
 <div class="task-container__wrapper">
 <div id="hours-wrapper" class="hours-wrapper"></div>
@@ -39,9 +44,8 @@
             <summary>Export tasks for Todoist</summary>
             <textarea data-item="export-area"></textarea>
         </details>
-    </div>
-    <div class="main-grid__export">
-
+        <hr />
+        <p><button id="reset-planner" type="button">Reset planner</button></p>
     </div>
 </div>
 
@@ -51,7 +55,7 @@
 <select name="duration">
     <option value="5">5 min</option>
     <option value="10">10 min</option>
-    <option value="15">15 min</option>
+    <option selected value="15">15 min</option>
     <option value="30">30 min</option>
     <option value="45">45 min</option>
     <option value="60">60 min</option>
