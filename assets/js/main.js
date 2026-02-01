@@ -57,6 +57,10 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    if (!localStorage.getItem('dkdailyplanner_tasks')) {
+        start_now();
+    }
+
     /* ----------------------------------------------------------
       Add a task
     ---------------------------------------------------------- */
@@ -187,6 +191,34 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     /* ----------------------------------------------------------
+      Start now
+    ---------------------------------------------------------- */
+
+    function start_now() {
+        var now = new Date();
+        var _day = 'today';
+        var _hours = now.getHours();
+        var _minutes = Math.round(now.getMinutes() / 15) * 15;
+        if (_minutes == 0) {
+            _minutes = '00';
+        }
+        if (_minutes == 60) {
+            _minutes = '00';
+            _hours += 1;
+        }
+
+        if (_hours == 24) {
+            _hours = 0;
+            _day = 'tomorrow';
+        }
+
+        $start_hour.value = _hours;
+        $start_minutes.value = _minutes;
+        $start_day.value = _day;
+        regenerate_export();
+    }
+
+    /* ----------------------------------------------------------
       Handle start of day
     ---------------------------------------------------------- */
 
@@ -202,26 +234,7 @@ document.addEventListener("DOMContentLoaded", function() {
     /* Now button */
     $select_now.addEventListener('click', function(e) {
         e.preventDefault();
-        var now = new Date();
-        var _day = 'today';
-        var _hours = now.getHours();
-        var _minutes = Math.round(now.getMinutes() / 15) * 15;
-        if (_minutes == 0) {
-            _minutes = '00';
-        }
-        if(_minutes == 60) {
-            _minutes = '00';
-            _hours += 1;
-            if(_hours == 24) {
-                _hours = 0;
-                _day = 'tomorrow';
-            }
-        }
-
-        $start_hour.value = _hours;
-        $start_minutes.value = _minutes;
-        $start_day.value = _day;
-        regenerate_export();
+        start_now();
 
     }, 1);
 
@@ -313,12 +326,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
         /* Build hours wrapper */
         _hours_content += '<div class="hour-item">' + initialTime.getHours() + ':00</div>';
-        while (initialTime.getHours() <= startTime.getHours()) {
+        while (initialTime.getTime() <= startTime.getTime()) {
             initialTime.setTime(initialTime.getTime() + (3600 * 1000));
             _hours_content += '<div class="hour-item">' + initialTime.getHours() + ':00</div>';
         }
-
-
         $hours_wrapper.innerHTML = _hours_content.trim();
         $export.value = _export_content.trim();
         $export.style.height = ($export.scrollHeight + 5) + "px";
