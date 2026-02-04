@@ -152,6 +152,14 @@ li[data-item*="task-item"][data-duration="60"] {
     height: 12em;
 }
 
+li[data-item*="task-item"][data-duration="90"] {
+    height: 18em;
+}
+
+li[data-item*="task-item"][data-duration="120"] {
+    height: 24em;
+}
+
 .task-item__inner {
     z-index: 1;
     position: absolute;

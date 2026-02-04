@@ -150,6 +150,10 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         e.preventDefault();
 
+
+
+
+
         /* Get clean pasted data and split it */
         var val = (e.clipboardData || window.clipboardData).getData('text');
         val = val.trim().split("\n").map(function(item) {
@@ -159,7 +163,12 @@ document.addEventListener("DOMContentLoaded", function() {
             return item.trim();
         });
         if (val[0]) {
-            e.target.value = val[0];
+            var _val_details = get_task_details(val[0]);
+            e.target.value = _val_details.task;
+            var _tmp_select_duration = e.target.closest('[data-item="task-item"]').querySelector('select[name="duration"]');
+            _tmp_select_duration.value = _val_details.duration;
+            update_select_duration(_tmp_select_duration);
+
         }
 
         /* Insert each line as a new task */
@@ -167,11 +176,22 @@ document.addEventListener("DOMContentLoaded", function() {
             if (!val[i]) {
                 continue;
             }
-            add_task(false, {
-                task: val[i]
-            });
+            add_task(false, get_task_details(val[i]));
         }
     });
+
+    function get_task_details(val) {
+        var duration = 15;
+        var _match = val.match(/(\d+)(m| min| minutes|mn|)/i);
+        if (_match) {
+            duration = parseInt(_match[1]);
+            val = val.replace(_match[0], '').trim();
+        }
+        return {
+            task: val,
+            duration: duration
+        };
+    }
 
     /* ----------------------------------------------------------
       Delete a task
