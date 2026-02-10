@@ -140,6 +140,10 @@ li[data-item*="task-item"][data-duration="15"] {
     height: 3em;
 }
 
+li[data-item*="task-item"][data-duration="20"] {
+    height: 4em;
+}
+
 li[data-item*="task-item"][data-duration="30"] {
     height: 6em;
 }

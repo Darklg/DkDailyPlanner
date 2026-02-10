@@ -268,6 +268,16 @@ document.addEventListener("DOMContentLoaded", function() {
             update_select_duration(e.target);
         }
     });
+    $task_container.addEventListener('keydown', function(e) {
+        if (e.key === "Backspace" && !e.target.value.trim()) {
+            e.preventDefault();
+            var $task_item = e.target.closest('[data-item="task-item"]');
+            if ($task_item.previousElementSibling) {
+                $task_item.previousElementSibling.querySelector('[name="task_content"]').focus();
+            }
+            delete_task($task_item);
+        }
+    });
     $task_container.addEventListener('keyup', function(e) {
         regenerate_export();
         if (e.key === "Enter") {
